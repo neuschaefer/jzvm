@@ -1,0 +1,10 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT OR LGPL-2.1
+
+# A cargo wrapper to cross-compile with the debian-installed toolchain.
+# apt install cargo rust-src gcc-arm-linux-gnueabi
+
+export RUSTC_BOOTSTRAP=1  # To allow the -Z flag in rustc
+export RUSTFLAGS=-Clinker=arm-linux-gnueabi-gcc  # to use the right linker
+
+exec cargo "$@" -Z build-std --target armv5te-unknown-linux-gnueabi
