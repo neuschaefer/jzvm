@@ -14,6 +14,8 @@ the rest of the ARM architecture(s). This is where `jzvm` comes in: It is an
 attempt to create both an open source software implementation, and hardware
 documentation for Jazelle.
 
+[^dbx]: The _Jazelle_ brand has later been reused for an unrelated technology, _Jazelle RCT_. When I say _Jazelle_ it will mean _Jazelle DBX_ most of the time.
+
 ## License
 
 The source code in this repository is licensed under the [LGPL 2.1]
@@ -47,13 +49,10 @@ The source code in this repository is licensed under the [LGPL 2.1]
   - enforce the NRS rule (https://graydon2.dreamwidth.org/1597.html)
 
 
-## Footnotes
-
-[^dbx]: The _Jazelle_ brand has later been reused for an unrelated technology, _Jazelle RCT_. When I say _Jazelle_ it will mean _Jazelle DBX_ most of the time.
-
 ## References
 
 - Wikipedia: <https://en.wikipedia.org/wiki/Jazelle>
 - the Hackspire wiki: <https://hackspire.org/index.php/Jazelle>
 - a previous attempt at using Jazelle: <https://github.com/SonoSooS/libjz/wiki/About>
+- and an Advent-of-Code solution: <https://github.com/aspargas2/advent-of-code-2022/tree/main/day05-jazelle>
 - ARMv5 Architecture Reference Manual [DDI0100I]: <https://developer.arm.com/documentation/ddi0100/i/>
