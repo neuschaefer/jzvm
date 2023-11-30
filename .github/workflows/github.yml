@@ -1,0 +1,16 @@
+on: [push]
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get update && sudo apt-get install -y git cargo
+      - uses: actions/checkout@v3
+      - run: cargo run
+      - run: cargo test
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get update && sudo apt-get install -y git cargo
+      - uses: actions/checkout@v3
+      - run: cargo run --release
+      - run: cargo test --release

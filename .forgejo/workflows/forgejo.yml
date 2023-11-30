@@ -1,0 +1,39 @@
+on: [push]
+jobs:
+  arm926:
+    runs-on:
+      # Specifying multiple entries under "runs-on" doesn't seem to work at the moment.
+      - linux-arm926
+    container:
+      # To speed things up, we use a custom base image. See .forgejo/Dockerfile
+      image: jzvm
+    steps:
+      # Unfortunately, actions are written in Node.js, which doesn't run on ARMv5[1],
+      # so we can't use actions.
+      # [1]: https://packages.debian.org/bookworm/nodejs "dep: armv6k-support"
+      #- uses: actions/checkout@v3
+
+      - run: |
+          git clone "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" -b "$GITHUB_REF_NAME" jzvm
+          cd jzvm
+          git reset --hard "$GITHUB_SHA"
+          cp -r /jzvm/target .
+
+      - run: cd jzvm && cargo run
+      - run: cd jzvm && cargo test
+      - run: cd jzvm && cargo test --release
+
+  arm1176:
+    runs-on:
+      - linux-arm1176
+    container:
+      image: jzvm
+    steps:
+      - run: |
+          git clone "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" -b "$GITHUB_REF_NAME" jzvm
+          cd jzvm
+          git reset --hard "$GITHUB_SHA"
+          cp -r /jzvm/target .
+      - run: cd jzvm && cargo run
+      - run: cd jzvm && cargo test
+      - run: cd jzvm && cargo test --release

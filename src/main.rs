@@ -1,18 +1,27 @@
 // SPDX-License-Identifier: LGPL-2.1
-use crate::exec::*;
 use std::error::Error;
-
-mod arm;
-pub mod exec;
+mod exec;
+mod op;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut state = State::new()?;
-    let proc = arm::ARMProcessor::new()?;
+    let mut state = exec::State::default();
+    let mut exec = exec::new()?;
 
-    println!("Jazelle implementation: {}", proc.get_id_string());
-    proc.check();
+    let code: exec::CodeBuf =
+        [op::iconst_2, op::iconst_3, op::iadd, op::breakpoint][..].try_into()?;
+    let mut ctx = exec::Context {
+        code: code.as_ref(),
+        locals: &mut vec![0],
+        stack: &mut vec![0; 2],
+    };
 
-    proc.execute(&mut state);
+    println!("Jazelle implementation: {}", exec.get_id_string());
+
+    unsafe {
+        println!("exec -> {:?}", exec.execute(&mut ctx, &mut state));
+    }
+
+    println!("Stack: {:x?}", &ctx.stack[0..state.sp]);
 
     Ok(())
 }

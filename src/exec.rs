@@ -1,47 +1,33 @@
 // SPDX-License-Identifier: LGPL-2.1
-use std::error::Error;
-use std::ffi::c_void;
-use std::fmt;
+pub use errors::*;
+use memmap2::{Mmap, MmapOptions};
+use std::fmt::Debug;
+use std::io;
 
-/// Hardware implementation identifier
-#[derive(Debug, Clone, Copy)]
-pub enum Implementation {
-    /// Emulated on an incompatible CPU
-    Emulation,
+mod arm;
+mod emu;
+mod errors;
 
-    /// Unknown but Jazelle-compatible CPU
-    Unknown,
-
-    /// Trivial implementation
-    Trivial,
-
-    /// ARM926EJ-S, my beloved
-    ARM926,
-}
-
-impl From<u32> for Implementation {
-    fn from(id: u32) -> Implementation {
-        match id {
-            0x64100004 => Implementation::ARM926,
-            0x00000000 => Implementation::Trivial,
-            _ => Implementation::Unknown,
-        }
+/// Create a new executor that is appropriate to the hardware
+#[cfg(target_arch = "arm")]
+pub fn new() -> Result<Box<dyn Executor>, CreationError> {
+    match arm::ARMExecutor::new() {
+        Err(CreationError::NotSupported) => Ok(Box::new(emu::EmulationExecutor::new()?)),
+        other => Ok(Box::new(other?)),
     }
 }
 
-impl From<Option<u32>> for Implementation {
-    fn from(maybe_id: Option<u32>) -> Implementation {
-        match maybe_id {
-            Some(id) => id.into(),
-            None => Implementation::Emulation,
-        }
-    }
+#[cfg(not(target_arch = "arm"))]
+pub fn new() -> Result<Box<dyn Executor>, CreationError> {
+    Ok(Box::new(emu::EmulationExecutor::new()?))
 }
 
 /// Things that can execute Jazelle code
-pub trait Processor {
-    /// Enter Jazelle mode and run until an exit condition
-    fn execute(&self, state: &mut State) -> ExitCondition;
+pub trait Executor: Debug {
+    /// Enter Jazelle mode and run until an exit condition occurs.
+    /// It is unsafe because we're executing arbitrary code...
+    unsafe fn execute(&mut self, ctx: &mut Context, state: &mut State)
+        -> Result<(), ExitCondition>;
 
     /// Get the Jazelle ID register contents, if available
     fn get_id(&self) -> Option<u32>;
@@ -61,61 +47,87 @@ pub trait Processor {
     }
 }
 
-/// Any reason why Jazelle execution might have stopped
-pub enum ExitCondition {
-    Lol,
+/// An execution context: It points to the tables necessary for code execution
+pub struct Context<'a> {
+    /// Code of the current method
+    pub code: &'a [u8],
+
+    /// Operand stack
+    pub stack: &'a mut [usize],
+
+    /// Table of local values
+    pub locals: &'a mut [usize],
 }
 
-/// Any reason why an executor could not be created
-#[derive(Debug)]
-pub enum CreationError {
-    NotSupported,
-}
-
-impl fmt::Display for CreationError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            CreationError::NotSupported => write!(f, "Not supported on this CPU"),
-        }
-    }
-}
-
-impl Error for CreationError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        None
-    }
-}
-
-type HandlerTable = [u32; 0x105]; // TODO: move aligned allocation into
-                                  // HandlerTable impl
-type Stack = [u32; 1024];
-
-// TODO: Change to a Ctx struct that holds tables by reference instead of owning
-// them
+/// Execution state: Registers changed during execution
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct State {
-    pub handler_table: Box<HandlerTable>,
-    pub stack: Box<Stack>,
-    pub stack_pointer: *mut c_void,
+    /// Program counter, offset into code
+    pub pc: usize,
+
+    /// Stack pointer, index into stack
+    pub sp: usize,
 }
 
-use std::alloc::LayoutError;
-impl State {
-    pub fn new() -> Result<State, LayoutError> {
-        let handler_table: Box<HandlerTable>;
+/// Hardware implementation identifier
+#[derive(Debug, Clone, Copy)]
+pub enum Implementation {
+    /// Emulated on an incompatible CPU
+    Emulation,
 
-        unsafe {
-            use std::alloc::{alloc_zeroed, Layout};
+    /// Unknown but Jazelle-compatible CPU
+    Unknown,
 
-            let layout = Layout::new::<HandlerTable>().align_to(1024)?;
-            handler_table = Box::from_raw(alloc_zeroed(layout) as *mut HandlerTable);
+    /// Trivial implementation
+    Trivial,
+
+    /// ARM926EJ-S, my beloved
+    ARM926,
+
+    /// ARM1176, as found in early Raspberry Pis
+    ARM1176,
+}
+
+impl From<u32> for Implementation {
+    fn from(id: u32) -> Implementation {
+        match id {
+            0x64100004 => Implementation::ARM926,
+            0x74100064 => Implementation::ARM1176,
+            0x00000000 => Implementation::Trivial,
+            _ => Implementation::Unknown,
         }
+    }
+}
 
-        let mut stack: Box<Stack> = Box::new([0; 1024]);
-        let stack_pointer = stack.as_mut_ptr() as *mut c_void;
-        Ok(Self {
-            handler_table,
-            stack,
-            stack_pointer,
-        })
+impl From<Option<u32>> for Implementation {
+    fn from(maybe_id: Option<u32>) -> Implementation {
+        match maybe_id {
+            Some(id) => id.into(),
+            None => Implementation::Emulation,
+        }
+    }
+}
+
+/// A buffer for holding code in an executable page
+pub struct CodeBuf {
+    map: Mmap,
+}
+
+impl TryFrom<&[u8]> for CodeBuf {
+    type Error = io::Error;
+
+    fn try_from(code: &[u8]) -> Result<Self, Self::Error> {
+        let mut map = MmapOptions::new().len(code.len()).map_anon()?;
+
+        map[..].clone_from_slice(code);
+        let map = map.make_exec()?;
+
+        Ok(Self { map })
+    }
+}
+
+impl AsRef<[u8]> for CodeBuf {
+    fn as_ref(&self) -> &[u8] {
+        &self.map[..]
     }
 }
