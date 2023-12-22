@@ -1,5 +1,17 @@
 # jzvm - ARM Jazelle DBX experiments
 
+_Project links: [repo] ([mirror]), [issues], CI: [ARM], [x86] ![badge]_
+
+[repo]: https://codeberg.org/neuschaefer/jzvm
+[mirror]: https://github.com/neuschaefer/jzvm
+[issues]: https://codeberg.org/neuschaefer/jzvm/issues
+[ARM]: https://codeberg.org/neuschaefer/jzvm/actions
+[x86]: https://github.com/neuschaefer/jzvm/actions
+[badge]: https://github.com/neuschaefer/jzvm/actions/workflows/github.yml/badge.svg
+
+
+## Introduction
+
 ARM Jazelle DBX ("direct bytecode execution")[^dbx] is a ARM32 instruction set
 extension that allows running Java bytecode directly on certain CPUs.
 Jazelle mode is entered by executing a special branch instruction, `BXJ`.
@@ -15,6 +27,7 @@ attempt to create both an open source software implementation, and hardware
 documentation for Jazelle.
 
 [^dbx]: The _Jazelle_ brand has later been reused for an unrelated technology, _Jazelle RCT_. When I say _Jazelle_ it will mean _Jazelle DBX_ most of the time.
+
 
 ## License
 
