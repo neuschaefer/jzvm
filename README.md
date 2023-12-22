@@ -23,32 +23,6 @@ The source code in this repository is licensed under the [LGPL 2.1]
 [LGPL 2.1]: https://opensource.org/license/lgpl-2-1/
 
 
-## TODO
-- kernel support (if `CONFIG_ARM_JAZELLE`)
-  - /proc/cpuinfo
-  - enable Jazelle
-- call gateway
-  - save all registers
-  - load all registers from a struct
-  - bxj
-  - record result
-  - swap registers back
-  - return
-- behavioral tests that compare results and expectations
-- run on different Jazelle implementations
-  - emulated (on non-ARM or ARMv7+)
-  - trivial
-  - ARM926EJ-S
-  - ARM11
-- record expectations for every implementation
-  - compare results with known implementations
-- a more efficient JVM wrapper
-- CI
-  - run tests on ARM926EJ-S
-    - GitLab CI runner
-  - enforce the NRS rule (https://graydon2.dreamwidth.org/1597.html)
-
-
 ## References
 
 - Wikipedia: <https://en.wikipedia.org/wiki/Jazelle>
