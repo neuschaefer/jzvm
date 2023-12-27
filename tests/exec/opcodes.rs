@@ -56,9 +56,9 @@ impl<'a> Test<'a> {
 
         let exit = exec.execute(&mut ctx, &mut state);
 
-        assert_eq!(exit, Err(self.exit));
-        assert_eq!(&ctx.stack[..state.sp], self.after.stack);
-        assert_eq!(&ctx.locals[..], self.after.locals);
+        assert_eq!(exit, Err(self.exit), "exit code");
+        assert_eq!(&ctx.stack[..state.sp], self.after.stack, "stack");
+        assert_eq!(&ctx.locals[..], self.after.locals, "locals");
     }
 }
 
@@ -137,6 +137,155 @@ fn test_02_iconst_m1() {
         Test::new(&[op::iconst_m1, op::breakpoint])
             .after(TestState::new().pc(1).stack(&[0xffffffff]))
             .run()
+    }
+}
+
+#[test]
+fn test_03_iconst_0() {
+    assert_eq!(0x03, op::iconst_0);
+    unsafe {
+        Test::new(&[op::iconst_0, op::breakpoint])
+            .after(TestState::new().pc(1).stack(&[0]))
+            .run()
+    }
+}
+
+#[test]
+fn test_04_iconst_1() {
+    assert_eq!(0x04, op::iconst_1);
+    unsafe {
+        Test::new(&[op::iconst_1, op::breakpoint])
+            .after(TestState::new().pc(1).stack(&[1]))
+            .run()
+    }
+}
+
+#[test]
+fn test_05_iconst_2() {
+    assert_eq!(0x05, op::iconst_2);
+    unsafe {
+        Test::new(&[op::iconst_2, op::breakpoint])
+            .after(TestState::new().pc(1).stack(&[2]))
+            .run()
+    }
+}
+
+#[test]
+fn test_06_iconst_3() {
+    assert_eq!(0x06, op::iconst_3);
+    unsafe {
+        Test::new(&[op::iconst_3, op::breakpoint])
+            .after(TestState::new().pc(1).stack(&[3]))
+            .run()
+    }
+}
+
+#[test]
+fn test_07_iconst_4() {
+    assert_eq!(0x07, op::iconst_4);
+    unsafe {
+        Test::new(&[op::iconst_4, op::breakpoint])
+            .after(TestState::new().pc(1).stack(&[4]))
+            .run()
+    }
+}
+
+#[test]
+fn test_08_iconst_5() {
+    assert_eq!(0x08, op::iconst_5);
+    unsafe {
+        Test::new(&[op::iconst_5, op::breakpoint])
+            .after(TestState::new().pc(1).stack(&[5]))
+            .run()
+    }
+}
+
+#[test]
+fn test_09_lconst_0() {
+    assert_eq!(0x09, op::lconst_0);
+    unsafe {
+        Test::new(&[op::lconst_0, op::breakpoint])
+            .after(TestState::new().pc(1).stack(&[0, 0]))
+            .run()
+    }
+}
+
+#[test]
+fn test_0a_lconst_1() {
+    assert_eq!(0x0a, op::lconst_1);
+    unsafe {
+        Test::new(&[op::lconst_1, op::breakpoint])
+            .after(TestState::new().pc(1).stack(&[1, 0]))
+            .run()
+    }
+}
+
+#[test]
+fn test_0b_fconst_0() {
+    assert_eq!(0x0b, op::fconst_0);
+    unsafe {
+        Test::new(&[op::fconst_0, op::breakpoint])
+            .after(TestState::new().pc(1).stack(&[0]))
+            .run()
+    }
+}
+
+#[test]
+fn test_0c_fconst_1() {
+    assert_eq!(0x0c, op::fconst_1);
+    unsafe {
+        Test::new(&[op::fconst_1, op::breakpoint])
+            .after(TestState::new().pc(1).stack(&[0x3f80_0000]))
+            .run()
+    }
+}
+
+#[test]
+fn test_0d_fconst_2() {
+    assert_eq!(0x0d, op::fconst_2);
+    unsafe {
+        Test::new(&[op::fconst_2, op::breakpoint])
+            .after(TestState::new().pc(1).stack(&[0x4000_0000]))
+            .run()
+    }
+}
+
+#[test]
+fn test_0e_dconst_0() {
+    assert_eq!(0x0e, op::dconst_0);
+    unsafe {
+        Test::new(&[op::dconst_0, op::breakpoint])
+            .after(TestState::new().pc(1).stack(&[0, 0]))
+            .run()
+    }
+}
+
+#[test]
+fn test_0f_dconst_1() {
+    assert_eq!(0x0f, op::dconst_1);
+    unsafe {
+        Test::new(&[op::dconst_1, op::breakpoint])
+            .exit(ExitCondition::OpcodeHandler(op::dconst_1))
+            .run()
+    }
+}
+
+#[test]
+fn test_10_bipush_pos() {
+    assert_eq!(0x10, op::bipush);
+    unsafe {
+        Test::new(&[op::bipush, 3, op::breakpoint])
+            .after(TestState::new().pc(2).stack(&[3]))
+            .run();
+    }
+}
+
+#[test]
+fn test_10_bipush_neg() {
+    unsafe {
+        Test::new(&[op::bipush, 0xff, op::breakpoint])
+            .after(TestState::new().pc(2).stack(&[0xffffffff]))
+            .run();
     }
 }
 

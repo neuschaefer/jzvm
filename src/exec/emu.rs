@@ -20,6 +20,10 @@ fn i2us(i: i32) -> usize {
     i as u32 as usize
 }
 
+fn l2us(l: isize) -> usize {
+    l as usize
+}
+
 impl Executor for EmulationExecutor {
     unsafe fn execute(
         &mut self,
@@ -37,12 +41,63 @@ impl Executor for EmulationExecutor {
                     ctx.stack[state.sp] = i2us(-1);
                     state.sp += 1;
                 }
+                op::iconst_0 => {
+                    ctx.stack[state.sp] = i2us(0);
+                    state.sp += 1;
+                }
+                op::iconst_1 => {
+                    ctx.stack[state.sp] = i2us(1);
+                    state.sp += 1;
+                }
                 op::iconst_2 => {
-                    ctx.stack[state.sp] = 2;
+                    ctx.stack[state.sp] = i2us(2);
                     state.sp += 1;
                 }
                 op::iconst_3 => {
-                    ctx.stack[state.sp] = 3;
+                    ctx.stack[state.sp] = i2us(3);
+                    state.sp += 1;
+                }
+                op::iconst_4 => {
+                    ctx.stack[state.sp] = i2us(4);
+                    state.sp += 1;
+                }
+                op::iconst_5 => {
+                    ctx.stack[state.sp] = i2us(5);
+                    state.sp += 1;
+                }
+                op::lconst_0 => {
+                    ctx.stack[state.sp] = 0;
+                    ctx.stack[state.sp + 1] = 0; // this is wrong
+                    state.sp += 2;
+                }
+                op::lconst_1 => {
+                    ctx.stack[state.sp] = 1;
+                    ctx.stack[state.sp + 1] = 0;
+                    state.sp += 2;
+                }
+                op::fconst_0 => {
+                    ctx.stack[state.sp] = 0;
+                    state.sp += 1;
+                }
+                op::fconst_1 => {
+                    ctx.stack[state.sp] = 0x3f800000; // dirty dirty hack to
+                                                      // hardcode it like this...
+                    state.sp += 1;
+                }
+                op::fconst_2 => {
+                    ctx.stack[state.sp] = 0x40000000;
+                    state.sp += 1;
+                }
+                op::dconst_0 => {
+                    ctx.stack[state.sp] = 0;
+                    ctx.stack[state.sp + 1] = 0;
+                    state.sp += 2;
+                }
+                op::bipush => {
+                    state.pc += 1;
+                    let value = fetch_u8(ctx, state.pc)?; // here, likewise, add a
+                                                          // function to get one byte
+                    ctx.stack[state.sp] = value as i8 as i32 as u32 as usize;
                     state.sp += 1;
                 }
                 op::istore_0 => {
