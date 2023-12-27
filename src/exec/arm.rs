@@ -127,8 +127,6 @@ impl Executor for ARMExecutor {
             let mut exit_code: u32;
             let handler_table = self.handler_table.0.as_mut_ptr();
 
-            println!("entry: {handler_table:?}, pc: {pc:?}, sp: {sp:?}, locals: {locals:?}");
-
             asm!(
                 "push {{r3-r8, r12, lr}}",
 

@@ -100,7 +100,6 @@ fn test_stack_is_checked() {
 
 #[test]
 #[should_panic]
-#[ignore] // broken in debug builds on ARM11
 fn test_locals_are_checked() {
     unsafe {
         // Store int 1 into local, and performatively don't expect it
@@ -117,7 +116,7 @@ fn test_00_nop() {
     unsafe {
         Test::new(&[op::nop, op::breakpoint])
             .after(TestState::new().pc(1))
-            .run();
+            .run()
     }
 }
 
@@ -142,7 +141,6 @@ fn test_02_iconst_m1() {
 }
 
 #[test]
-#[ignore] // broken in debug builds on ARM11
 fn test_3b_istore_0() {
     assert_eq!(0x3b, op::istore_0);
     unsafe {

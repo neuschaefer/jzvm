@@ -5,6 +5,7 @@ use std::fmt::Debug;
 use std::io;
 
 mod arm;
+mod cache;
 mod emu;
 mod errors;
 
@@ -121,6 +122,7 @@ impl TryFrom<&[u8]> for CodeBuf {
 
         map[..].clone_from_slice(code);
         let map = map.make_exec()?;
+        cache::flush_slice(&map[..]);
 
         Ok(Self { map })
     }

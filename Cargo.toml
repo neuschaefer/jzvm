@@ -7,4 +7,6 @@ license = "LGPL-2.1"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+cfg-if = "1.0.0"
+libc = "0.2.151"
 memmap2 = "0.9.2"
